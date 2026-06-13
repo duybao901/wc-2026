@@ -1,0 +1,21 @@
+{
+  "name": "wc2026",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @wc2026/api & npm run dev -w @wc2026/web",
+    "build": "npm run build -w @wc2026/api && npm run build -w @wc2026/web",
+    "lint": "npm run lint -w @wc2026/api && npm run lint -w @wc2026/web",
+    "test": "npm run test -w @wc2026/api && npm run test -w @wc2026/web"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@nestjs/platform-express": "^11.1.26"
+  }
+}
