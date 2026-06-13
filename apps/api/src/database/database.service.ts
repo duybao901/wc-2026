@@ -88,9 +88,12 @@ export class DatabaseService implements OnModuleDestroy {
             kickoff_at = EXCLUDED.kickoff_at,
             venue = EXCLUDED.venue,
             city = EXCLUDED.city,
-            status = EXCLUDED.status,
-            home_score = EXCLUDED.home_score,
-            away_score = EXCLUDED.away_score`,
+            status = CASE
+              WHEN matches.status = 'finished' THEN matches.status
+              ELSE EXCLUDED.status
+            END,
+            home_score = COALESCE(matches.home_score, EXCLUDED.home_score),
+            away_score = COALESCE(matches.away_score, EXCLUDED.away_score)`,
         [
           match.fifaMatchNo,
           match.groupCode,

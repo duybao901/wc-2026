@@ -24,7 +24,7 @@ export interface ScoreSyncSummary {
 }
 
 type ProviderPayload = unknown;
-type SyncPhase = 'pre-match' | 'live' | 'final-window' | 'post-match';
+type SyncPhase = 'pre-match' | 'live' | 'final-window' | 'post-match' | 'delayed-final';
 
 export interface SyncDecision {
   shouldSync: boolean;
@@ -258,13 +258,15 @@ export class ScoreSyncService implements OnModuleInit {
       'pre-match': 'SCORE_SYNC_PRE_MATCH_INTERVAL_MINUTES',
       live: 'SCORE_SYNC_LIVE_INTERVAL_MINUTES',
       'final-window': 'SCORE_SYNC_FINAL_INTERVAL_MINUTES',
-      'post-match': 'SCORE_SYNC_POST_MATCH_INTERVAL_MINUTES'
+      'post-match': 'SCORE_SYNC_POST_MATCH_INTERVAL_MINUTES',
+      'delayed-final': 'SCORE_SYNC_DELAYED_INTERVAL_MINUTES'
     };
     const defaults: Record<SyncPhase, number> = {
       'pre-match': 30,
       live: 10,
       'final-window': 3,
-      'post-match': 15
+      'post-match': 15,
+      'delayed-final': 60
     };
     const value = Number(process.env[envKeyByPhase[phase]] ?? defaults[phase]);
 
@@ -356,11 +358,15 @@ export function getMatchSyncPhase(kickoffAt: Date, now: Date): SyncPhase | null 
     return 'post-match';
   }
 
+  if (minutesFromKickoff >= 240 && minutesFromKickoff < 2160) {
+    return 'delayed-final';
+  }
+
   return null;
 }
 
 function pickMostUrgentPhase(phases: Array<SyncPhase | null>): SyncPhase | undefined {
-  const priority: SyncPhase[] = ['final-window', 'live', 'post-match', 'pre-match'];
+  const priority: SyncPhase[] = ['final-window', 'live', 'post-match', 'pre-match', 'delayed-final'];
 
   return priority.find((phase) => phases.includes(phase));
 }

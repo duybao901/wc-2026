@@ -37,6 +37,73 @@ npm run dev -w @wc2026/web
 
 The API creates the database schema and seeds the group-stage schedule on startup.
 
+## Production Deploy With Docker Compose + Nginx
+
+Production files:
+
+- `docker-compose.prod.yml`
+- `nginx.reverse-proxy.conf`
+- `apps/api/Dockerfile`
+- `apps/web/Dockerfile`
+- `.env.production.example`
+
+On the VPS:
+
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin git
+
+sudo mkdir -p /opt/wc2026
+sudo chown -R $USER:$USER /opt/wc2026
+
+cd /opt/wc2026
+git clone <your-repo-url> .
+cp .env.production.example .env
+nano .env
+```
+
+Required production env values:
+
+```env
+APP_DOMAIN=example.com
+API_DOMAIN=api.example.com
+APP_SCHEME=http
+API_SCHEME=http
+POSTGRES_PASSWORD=change-this-strong-password
+SCORE_SYNC_API_KEY=your-api-key
+```
+
+Point DNS records to your VPS public IP:
+
+```text
+A example.com     <VPS_PUBLIC_IP>
+A api.example.com <VPS_PUBLIC_IP>
+```
+
+Start production:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Check containers:
+
+```bash
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f api
+docker compose -f docker-compose.prod.yml logs -f reverse-proxy
+```
+
+The production reverse proxy is Nginx. This default setup serves HTTP on port 80, so `APP_SCHEME` and `API_SCHEME` default to `http`. After you add Certbot or another TLS layer, change both values to `https` and rebuild the web image.
+
+Redeploy:
+
+```bash
+cd /opt/wc2026
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
 ## Environment Files
 
 Environment variables are split by app:
@@ -80,6 +147,11 @@ SCORE_SYNC_API_KEY=your-api-key
 SCORE_SYNC_AUTH_HEADER=X-Auth-Token
 SCORE_SYNC_DAILY_LIMIT=95
 SCORE_SYNC_PER_MINUTE_LIMIT=10
+SCORE_SYNC_PRE_MATCH_INTERVAL_MINUTES=30
+SCORE_SYNC_LIVE_INTERVAL_MINUTES=10
+SCORE_SYNC_FINAL_INTERVAL_MINUTES=3
+SCORE_SYNC_POST_MATCH_INTERVAL_MINUTES=15
+SCORE_SYNC_DELAYED_INTERVAL_MINUTES=60
 ```
 
 Default quota-aware sync behavior:
@@ -88,6 +160,7 @@ Default quota-aware sync behavior:
 - During the match: sync at most every 10 minutes.
 - 100 to 135 minutes after kickoff: sync at most every 3 minutes to catch full-time scores sooner.
 - 135 minutes to 4 hours after kickoff: sync at most every 15 minutes to catch delayed scores.
+- 4 to 36 hours after kickoff, if the match is still not finished in the DB: sync at most every 60 minutes for delayed free-tier providers.
 - Daily limit defaults to 95 requests to stay below a 100 requests/day free-tier quota.
 - Per-minute limit defaults to 10 calls/minute.
 

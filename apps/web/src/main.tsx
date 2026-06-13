@@ -80,6 +80,10 @@ function getCountdownParts(kickoffAt: string, now: Date) {
   };
 }
 
+function hasKickoffPassed(kickoffAt: string, now: Date) {
+  return new Date(kickoffAt).getTime() <= now.getTime();
+}
+
 function useNow() {
   const [now, setNow] = React.useState(() => new Date());
 
@@ -190,41 +194,36 @@ function CountdownBadge({ kickoffAt, now }: { kickoffAt: string; now: Date }) {
   const parts = getCountdownParts(kickoffAt, now);
 
   if (!parts) {
-    return (
-      <div className="countdownBadge soon">
-        <Activity size={12} />
-        <span>Starting soon</span>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="countdownBadge" aria-label="Countdown to kickoff">
       <Clock3 size={12} />
-      <span className="countUnit">
-        <strong>{parts.hours.toString().padStart(2, '0')}</strong>
-        <em>H</em>
-      </span>
-      <span className="countSeparator">:</span>
-      <span className="countUnit">
-        <strong>{parts.minutes.toString().padStart(2, '0')}</strong>
-        <em>M</em>
-      </span>
-      <span className="countSeparator">:</span>
-      <span className="countUnit">
-        <strong>{parts.seconds.toString().padStart(2, '0')}</strong>
-        <em>S</em>
-      </span>
+      <strong>
+        {parts.hours.toString().padStart(2, '0')}:
+        {parts.minutes.toString().padStart(2, '0')}:
+        {parts.seconds.toString().padStart(2, '0')}
+      </strong>
     </div>
   );
 }
 
-function MatchStatusBadge({ match, isToday }: { match: Match; isToday: boolean }) {
+function MatchStatusBadge({ match, isToday, now }: { match: Match; isToday: boolean; now: Date }) {
   if (match.status === 'finished') {
     return (
       <span className="statusBadge finished">
         <CheckCircle2 size={12} />
         FT
+      </span>
+    );
+  }
+
+  if (hasKickoffPassed(match.kickoffAt, now)) {
+    return (
+      <span className="statusBadge live">
+        <Activity size={12} />
+        Awaiting score
       </span>
     );
   }
@@ -398,6 +397,7 @@ function App() {
                     const featured = isFeaturedMatch(match);
                     const matchDateKey = getDateKeyInVietnam(match.kickoffAt);
                     const isToday = matchDateKey === todayKey;
+                    const kickoffPassed = hasKickoffPassed(match.kickoffAt, now);
 
                     return (
                       <article
@@ -406,7 +406,8 @@ function App() {
                           'matchRow',
                           featured ? 'featured' : '',
                           match.status === 'finished' ? 'isFinished' : '',
-                          isToday && match.status !== 'finished' ? 'isToday' : ''
+                          isToday && match.status !== 'finished' && !kickoffPassed ? 'isToday' : '',
+                          kickoffPassed && match.status !== 'finished' ? 'needsScore' : ''
                         ]
                           .filter(Boolean)
                           .join(' ')}
@@ -414,7 +415,7 @@ function App() {
                         <div className="matchMeta">
                           <strong>Group {match.groupCode}</strong>
                           <span>Match {match.fifaMatchNo}</span>
-                          <MatchStatusBadge match={match} isToday={isToday} />
+                          <MatchStatusBadge match={match} isToday={isToday} now={now} />
                           {featured && <span className="featuredBadge">Featured</span>}
                         </div>
                         <div className="teams">
@@ -428,6 +429,11 @@ function App() {
                           <div className="score">
                             {match.status === 'finished' ? (
                               `${match.homeScore} - ${match.awayScore}`
+                            ) : kickoffPassed ? (
+                              <>
+                                <span>{formatTime(match.kickoffAt)}</span>
+                                <small className="scoreHint">Awaiting score</small>
+                              </>
                             ) : (
                               <>
                                 <span>{formatTime(match.kickoffAt)}</span>

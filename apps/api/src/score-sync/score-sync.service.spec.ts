@@ -94,6 +94,7 @@ describe('score sync normalizer', () => {
     expect(getMatchSyncPhase(kickoff, new Date('2026-06-13T12:45:00.000Z'))).toBe('live');
     expect(getMatchSyncPhase(kickoff, new Date('2026-06-13T13:45:00.000Z'))).toBe('final-window');
     expect(getMatchSyncPhase(kickoff, new Date('2026-06-13T14:30:00.000Z'))).toBe('post-match');
-    expect(getMatchSyncPhase(kickoff, new Date('2026-06-13T17:00:00.000Z'))).toBeNull();
+    expect(getMatchSyncPhase(kickoff, new Date('2026-06-13T17:00:00.000Z'))).toBe('delayed-final');
+    expect(getMatchSyncPhase(kickoff, new Date('2026-06-15T01:00:00.000Z'))).toBeNull();
   });
 });

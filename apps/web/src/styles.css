@@ -471,6 +471,11 @@ button {
   box-shadow: 0 8px 22px rgba(20, 184, 166, 0.08);
 }
 
+.matchRow.needsScore {
+  border-color: #fed7aa;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.08);
+}
+
 .matchRow.featured {
   position: relative;
   overflow: hidden;
@@ -542,6 +547,12 @@ button {
   border: 1px solid #99f6e4;
 }
 
+.statusBadge.live {
+  color: #b45309 !important;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
 .statusBadge.scheduled {
   color: #64748b !important;
   background: #f8fafc;
@@ -578,60 +589,35 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   margin-top: 5px;
   color: #0f766e;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-}
-
-.countdownBadge svg {
-  color: #14b8a6;
-}
-
-.countdownBadge.soon {
-  gap: 4px;
-  padding: 3px 7px;
-  color: #b45309;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 4px 6px;
+  white-space: nowrap;
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.16);
   border-radius: 999px;
 }
 
-.countdownBadge.soon svg {
-  color: #f59e0b;
+.countdownBadge svg {
+  flex: 0 0 auto;
+  color: #14b8a6;
 }
 
-.countUnit {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  gap: 1px;
-  min-width: 23px;
-  justify-content: center;
-  padding: 2px 4px;
-  background: rgba(20, 184, 166, 0.08);
-  border: 1px solid rgba(20, 184, 166, 0.14);
-  border-radius: 5px;
-}
-
-.countUnit strong {
+.countdownBadge strong {
   color: #0f172a;
   font-size: 11px;
-  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
-.countUnit em {
-  color: #0f766e;
-  font-size: 7px;
-  font-style: normal;
-  line-height: 1;
-}
-
-.countSeparator {
-  color: #5eead4;
-  line-height: 1;
+.scoreHint {
+  color: #b45309;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .matchTeam {

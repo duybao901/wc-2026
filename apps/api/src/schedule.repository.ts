@@ -272,7 +272,7 @@ export class ScheduleRepository {
       `SELECT fifa_match_no, kickoff_at, status
        FROM matches
        WHERE status <> 'finished'
-         AND kickoff_at BETWEEN $1::timestamptz - interval '4 hours'
+         AND kickoff_at BETWEEN $1::timestamptz - interval '36 hours'
                             AND $1::timestamptz + interval '30 minutes'
        ORDER BY kickoff_at`,
       [now.toISOString()]
